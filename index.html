@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson & Ada - Daily Lesson</title>
+    <title>Nelson & Ada - Full Prototype</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
@@ -44,11 +44,11 @@
         .btn:hover { background: var(--primary); }
         .btn-accent { background: var(--accent); }
 
-        /* Tutor Selection Cards */
+        /* Tutor Cards */
         .tutor-container { display: flex; gap: 16px; margin: 20px 0; }
         .tutor-card { flex: 1; border: 2px solid #E5E7EB; border-radius: 16px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .tutor-card:hover, .tutor-card.selected { border-color: var(--secondary); background: #EFF6FF; }
-        .tutor-avatar { width: 70px; height: 70px; border-radius: 50%; background: #DDD; margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: white; }
+        .tutor-avatar { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: white; }
         .avatar-ada { background: #EC4899; }
         .avatar-nelson { background: #3B82F6; }
 
@@ -57,17 +57,19 @@
         .option-card { background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
         .option-card:hover { border-color: var(--secondary); background: #EFF6FF; }
 
-        .audio-trigger { width: 70px; height: 70px; border-radius: 50%; background: #EFF6FF; color: var(--secondary); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin: 15px auto; cursor: pointer; border: 2px solid var(--secondary); }
+        .audio-trigger, .mic-trigger { width: 75px; height: 75px; border-radius: 50%; background: #EFF6FF; color: var(--secondary); display: flex; justify-content: center; align-items: center; font-size: 1.6rem; margin: 15px auto; cursor: pointer; border: 2px solid var(--secondary); }
+        .mic-trigger.recording { background: var(--danger); color: white; border-color: var(--danger); animation: pulse 1.5s infinite; }
         
-        /* Chat Area Box */
-        .chat-box { flex: 1; border: 1px solid #E5E7EB; border-radius: 16px; background: #F9FAFB; height: 250px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-        .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; }
+        /* Chat Box */
+        .chat-box { flex: 1; border: 1px solid #E5E7EB; border-radius: 16px; background: #F9FAFB; height: 220px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; }
         .msg.agent { background: #E0F2FE; color: #0369A1; align-self: flex-start; border-bottom-left-radius: 2px; }
         .msg.user { background: var(--secondary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-input-area { display: flex; gap: 8px; }
         .chat-input-area input { flex: 1; padding: 12px; border: 2px solid #E5E7EB; border-radius: 12px; font-size: 0.95rem; }
 
-        .step-counter { text-align: center; font-weight: 700; color: var(--secondary); margin-bottom: 8px; text-transform: uppercase; font-size: 0.8rem; }
+        .step-counter { text-align: center; font-weight: 700; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase; font-size: 0.8rem; }
+        .timer-display { font-size: 1.4rem; font-weight: 700; color: var(--danger); margin-top: 5px; text-align: center; }
     </style>
 </head>
 <body>
@@ -78,233 +80,40 @@
     </div>
 
     <div class="header">
-        <h1 id="header-title">Nelson & Ada AI Agent</h1>
+        <h1 id="header-title">AI English Assessment</h1>
         <div class="progress-bar-container"><div class="progress-bar" id="progress"></div></div>
     </div>
 
-    <!-- SCHERMATA 1: SELEZIONE TUTOR -->
-    <div class="screen active" id="screen-tutor-select">
-        <h2>Scegli il tuo Tutor AI</h2>
-        <p class="subtitle">La lezione quotidiana dura 10 minuti di orologio. Chi ti guiderà oggi?</p>
-        
-        <div class="tutor-container">
-            <div class="tutor-card" id="card-ada" onclick="selectTutor('Ada')">
-                <div class="tutor-avatar avatar-ada"><i class="fas fa-user-astronaut"></i></div>
-                <strong>Ada</strong>
-                <p style="font-size:0.8rem; color:#6B7280; margin-top:4px;">Empatica & Motivante</p>
-            </div>
-            <div class="tutor-card" id="card-nelson" onclick="selectTutor('Nelson')">
-                <div class="tutor-avatar avatar-nelson"><i class="fas fa-user-tie"></i></div>
-                <strong>Nelson</strong>
-                <p style="font-size:0.8rem; color:#6B7280; margin-top:4px;">Pragmatico & Business</p>
-            </div>
+    <div class="screen active" id="screen-lead">
+        <h2>Inizia la tua Sfida</h2>
+        <p class="subtitle">Verifica Lettura, Ascolto e Parlato per calcolare il tuo livello (1-50).</p>
+        <div class="form-group"><label>Nome completo</label><input type="text" id="username" placeholder="Es. Roberto Calculli"></div>
+        <div class="form-group"><label>Indirizzo Email</label><input type="email" id="useremail" placeholder="Es. nome@azienda.com"></div>
+        <button class="btn btn-accent" onclick="startAssessment()">Inizia il Test <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div class="screen" id="screen-assessment-reading">
+        <div class="step-counter" id="assess-reading-counter">Test d'Ingresso: Lettura (1 di 5)</div>
+        <div class="question-box" id="assess-reading-text">Caricamento...</div>
+        <p style="margin-bottom: 12px; font-weight: 600;" id="assess-reading-question">Domanda...</p>
+        <ul class="options-list" id="assess-reading-options"></ul>
+    </div>
+
+    <div class="screen" id="screen-assessment-listening">
+        <div class="step-counter" id="assess-listening-counter">Test d'Ingresso: Ascolto (1 di 3)</div>
+        <div class="audio-trigger" onclick="playAssessAudio()"><i class="fas fa-volume-up"></i></div>
+        <p id="assess-audio-status" style="text-align: center; color: var(--secondary); font-weight: 500; margin-bottom: 15px;">Clicca per ascoltare</p>
+        <p style="margin-bottom: 12px; font-weight: 600;" id="assess-listening-question">Domanda...</p>
+        <ul class="options-list" id="assess-listening-options"></ul>
+    </div>
+
+    <div class="screen" id="screen-assessment-speaking">
+        <div class="step-counter">Test d'Ingresso: Parlato</div>
+        <p class="subtitle">Parla per almeno 30 secondi per permettere all'AI di valutare la tua fluenza.</p>
+        <div class="question-box" style="text-align: center; font-weight: 600; color: var(--primary);">
+            🎤 "Tell me about your job, your daily routine, and what you love doing in your free time."
         </div>
-
-        <button class="btn btn-accent" id="start-lesson-btn" disabled onclick="startLesson()">Inizia Sessione (10 min) <i class="fas fa-play"></i></button>
-    </div>
-
-    <!-- SCHERMATA 2: READING (3 MINUTI - 5 DOMANDE) -->
-    <div class="screen" id="screen-reading">
-        <div class="step-counter" id="reading-counter">Blocco 1: Lettura (Domanda 1 di 5)</div>
-        <p class="subtitle" style="margin-bottom:12px;">Tempo stimato dedicato: 3 minuti</p>
-        <div class="question-box" id="reading-text">Caricamento testo per livello 42...</div>
-        <p style="margin-bottom: 12px; font-weight: 600;" id="reading-question">Domanda...</p>
-        <ul class="options-list" id="reading-options"></ul>
-    </div>
-
-    <!-- SCHERMATA 3: LISTENING (2 MINUTI - 3 TRACCE) -->
-    <div class="screen" id="screen-listening">
-        <div class="step-counter" id="listening-counter">Blocco 2: Ascolto (Traccia 1 di 3)</div>
-        <p class="subtitle" style="margin-bottom:12px;">Tempo stimato dedicato: 2 minuti</p>
-        <div class="audio-trigger" onclick="playLessonAudio()"><i class="fas fa-volume-up"></i></div>
-        <p id="audio-status" style="text-align: center; color: var(--secondary); font-weight: 500; margin-bottom: 15px;">Clicca per ascoltare l'AI</p>
-        <p style="margin-bottom: 12px; font-weight: 600;" id="listening-question">Domanda...</p>
-        <ul class="options-list" id="listening-options"></ul>
-    </div>
-
-    <!-- SCHERMATA 4: CHAT CON AI AGENT (5 MINUTI DI CONVERSAZIONE) -->
-    <div class="screen" id="screen-chat">
-        <div class="step-counter" id="chat-title-identity">Blocco 3: Conversazione con Ada</div>
-        <p class="subtitle" style="margin-bottom:10px;">Obiettivo: Interagisci per 5 minuti parlando di Lavoro, Famiglia o Hobby.</p>
-        
-        <div class="chat-box" id="chat-messages">
-            <!-- Messaggi della chat generati qui -->
-        </div>
-
-        <div class="chat-input-area">
-            <input type="text" id="chat-input-field" placeholder="Scrivi la tua risposta in inglese...">
-            <button class="btn" style="margin-top:0; width:auto; padding:12px 16px;" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <!-- SCHERMATA 5: COMPLETATO -->
-    <div class="screen" id="screen-end">
-        <h2>🔥 Sessione Completata!</h2>
-        <p class="subtitle">Hai protetto la gratuità dell'app per oggi.</p>
-        <div class="question-box" style="border-left-color: var(--success); background: #ECFDF5; color: #065F46;">
-            <strong>Resoconto di <span id="report-tutor-name">Ada</span>:</strong><br>
-            "Ottimo lavoro! Oggi hai completato i 10 minuti obbligatori di studio. La tua striscia giornaliera (Streak) è al sicuro ed hai accumulato +50 XP verso il livello successivo!"
-        </div>
-        <button class="btn" onclick="location.reload()">Torna alla Home</button>
-    </div>
-</div>
-
-<script>
-    let selectedTutor = "";
-    let totalSeconds = 600; // 10 minuti di timer globale
-    let globalTimerInterval = null;
-
-    // Database Lezioni Generative (Livello di esempio 42)
-    const readingQuestions = [
-        { t: "The CEO underscored the necessity of fostering an agile corporate culture to mitigate expansion risks.", q: "What is the primary goal of this strategy?", o: ["Reduce risks during global scaling", "Increase internal costs", "Slow down decisions"], c: 0 },
-        { t: "Had the board anticipated the shift in demand, they would have allocated more capital to development.", q: "Did the board expect the market change?", o: ["Yes, completely", "No, it caught them by surprise", "The text doesn't say"], c: 1 },
-        { t: "The legal department is thoroughly vetting the side letters to ensure total compliance.", q: "What is the team reviewing?", o: ["Main contracts only", "Secondary agreements", "Public relations updates"], c: 1 },
-        { t: "Emerging startups rarely disrupt traditional sectors without heavy early investment in CRM tools.", q: "What is crucial for market disruption?", o: ["Solid customer relationship software", "Avoiding external funding", "Hiring fewer people"], c: 0 },
-        { t: "Despite initial skepticism, the strategic alignment of the digital infrastructure yielded an uptick in production.", q: "What was the final outcome?", o: ["A performance drop", "A growth in production", "Widespread confusion"], c: 1 }
-    ];
-
-    const listeningQuestions = [
-        { s: "We need to benchmark our core metrics against our direct competitors before launching the final software release next Friday.", q: "What action is required before the launch?", o: ["Changing the date", "Comparing internal metrics with competitors", "Hiring designers"], c: 1 },
-        { s: "Scaling our operations into the French market requires a meticulously structured commission framework for local agents.", q: "What specific framework is required?", o: ["A commission system for agents", "A branding plan", "A generic pricing cut"], c: 0 },
-        { s: "The engineering team successfully integrated the speech-to-text algorithm, reducing latency down to under two hundred milliseconds.", q: "What improvement was achieved?", o: ["Lower server bills", "Highly responsive low-latency voice feature", "New layout for screens"], c: 1 }
-    ];
-
-    let rIdx = 0; let lIdx = 0;
-
-    function selectTutor(tutor) {
-        selectedTutor = tutor;
-        document.getElementById('card-ada').classList.remove('selected');
-        document.getElementById('card-nelson').classList.remove('selected');
-        document.getElementById(`card-${tutor.toLowerCase()}`).classList.add('selected');
-        document.getElementById('start-lesson-btn').removeAttribute('disabled');
-    }
-
-    function startLesson() {
-        document.getElementById('screen-tutor-select').classList.remove('active');
-        document.getElementById('screen-reading').classList.add('active');
-        
-        // Attiva e lancia il timer globale dei 10 minuti obbligatori
-        document.getElementById('global-timer-banner').style.display = 'flex';
-        startGlobalTimer();
-        loadReading();
-    }
-
-    function startGlobalTimer() {
-        globalTimerInterval = setInterval(() => {
-            totalSeconds--;
-            let mins = Math.floor(totalSeconds / 60);
-            let secs = totalSeconds % 60;
-            document.getElementById('session-countdown').innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
-            if(totalSeconds <= 0) {
-                clearInterval(globalTimerInterval);
-                finishLesson();
-            }
-        }, 1000);
-    }
-
-    function loadReading() {
-        document.getElementById('progress').style.width = (rIdx * 6) + '%';
-        document.getElementById('reading-counter').innerText = `Blocco 1: Lettura (Domanda ${rIdx + 1} di 5)`;
-        let data = readingQuestions[rIdx];
-        document.getElementById('reading-text').innerText = `"${data.t}"`;
-        document.getElementById('reading-question').innerText = data.q;
-        let html = "";
-        data.o.forEach((opt, idx) => { html += `<li class="option-card" onclick="submitReading(${idx})">${opt}</li>`; });
-        document.getElementById('reading-options').innerHTML = html;
-    }
-
-    function submitReading(idx) {
-        rIdx++;
-        if(rIdx < 5) loadReading();
-        else {
-            document.getElementById('screen-reading').classList.remove('active');
-            document.getElementById('screen-listening').classList.add('active');
-            loadListening();
-        }
-    }
-
-    function loadListening() {
-        document.getElementById('progress').style.width = (30 + (lIdx * 10)) + '%';
-        document.getElementById('listening-counter').innerText = `Blocco 2: Ascolto (Traccia ${lIdx + 1} di 3)`;
-        document.getElementById('audio-status').innerText = "Clicca per ascoltare l'AI";
-        let data = listeningQuestions[lIdx];
-        document.getElementById('listening-question').innerText = data.q;
-        let html = "";
-        data.o.forEach((opt, idx) => { html += `<li class="option-card" onclick="submitListening(${idx})">${opt}</li>`; });
-        document.getElementById('listening-options').innerHTML = html;
-    }
-
-    function playLessonAudio() {
-        let status = document.getElementById('audio-status');
-        status.innerText = "🔊 Ada/Nelson sta parlando...";
-        let msg = new SpeechSynthesisUtterance(listeningQuestions[lIdx].s);
-        msg.lang = 'en-US';
-        msg.onend = () => { status.innerText = "🟢 Ascolto completato."; };
-        window.speechSynthesis.speak(msg);
-    }
-
-    function submitListening(idx) {
-        lIdx++;
-        if(lIdx < 3) loadListening();
-        else {
-            document.getElementById('screen-listening').classList.remove('active');
-            document.getElementById('screen-chat').classList.add('active');
-            initChat();
-        }
-    }
-
-    // BLOCCO 3: CHAT DI CONVERSAZIONE (5 MINUTI REALI O SIMULATI)
-    function initChat() {
-        document.getElementById('progress').style.width = '70%';
-        document.getElementById('chat-title-identity').innerText = `Blocco 3: Conversazione con ${selectedTutor}`;
-        
-        let introMsg = selectedTutor === "Ada" ? 
-            "Excellent to see you today! I was reviewing our roadmap. In your opinion, what should be our priority when presenting software to high-profile corporate partners?" :
-            "Let's get down to business. When scaling into international markets like France, how do you plan to handle early-stage client acquisition?";
-        
-        appendMessage(selectedTutor, introMsg, 'agent');
-    }
-
-    function appendMessage(sender, text, side) {
-        let box = document.getElementById('chat-messages');
-        let msgDiv = document.createElement('div');
-        msgDiv.className = `msg ${side}`;
-        msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-        box.appendChild(msgDiv);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function sendChatMessage() {
-        let input = document.getElementById('chat-input-field');
-        let text = input.value.trim();
-        if(!text) return;
-        
-        appendMessage('Tu', text, 'user');
-        input.value = "";
-
-        // Risposta immediata dell'AI Agent per mantenere viva l'interazione
-        setTimeout(() => {
-            let replies = [
-                "That's a very sharp point. Effective CRM integration is definitely crucial for scaling operations up efficiently.",
-                "I agree with your approach. Mitigating risk early on ensures stability. What about the pricing or commission framework?",
-                "Interesting perspective. Let's make sure we log these notes for our next strategic session. We have done enough for today!"
-            ];
-            let randomReply = replies[Math.floor(Math.random() * replies.length)];
-            appendMessage(selectedTutor, randomReply, 'agent');
-            
-            // Per ragioni di demo, dopo 2 scambi l'app permette di completare l'esperienza
-            document.getElementById('progress').style.width = '100%';
-            setTimeout(finishLesson, 3000);
-        }, 1200);
-    }
-
-    function finishLesson() {
-        clearInterval(globalTimerInterval);
-        document.getElementById('global-timer-banner').style.display = 'none';
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-end').classList.add('active');
-        document.getElementById('report-tutor-name').innerText = selectedTutor;
-    }
-</script>
-</body>
-</html>
+        <div class="mic-trigger" id="assess-mic-btn" onclick="handleAssessSpeaking()"><i class="fas fa-microphone"></i></div>
+        <div class="timer-display" id="assess-timer-output">00:30</div>
+        <p id="assess-mic-status" style="text-align: center; font-weight: 600; color: #6B7280;">Clicca sul microfono per iniziare</p>
+        <button class="btn btn-accent" id="assess-finish-btn" style
