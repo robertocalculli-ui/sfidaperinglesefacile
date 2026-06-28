@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI English Agent - Assessment Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #F59E0B;
+            --danger: #EF4444;
+            --success: #10B981;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .screen {
+            padding: 24px;
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: #6B7280;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+        .btn-accent:hover {
+            background: #D97706;
+        }
+
+        /* Question Box Styling */
+        .question-box {
+            background: #F9FAFB;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+            font-style: italic;
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .option-card:hover {
+            border-color: var(--secondary);
+            background: #EFF6FF;
+        }
+
+        /* Audio & Mic Controls */
+        .audio-trigger, .mic-trigger {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #EFF6FF;
+            color: var(--secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            margin: 20px auto;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid var(--secondary);
+        }
+
+        .mic-trigger.recording {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Result Screen & Challenge Card */
+        .badge-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .level-badge {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            border: 4px solid var(--accent);
+        }
+
+        .challenge-card {
+            background: #FFFBEB;
+            border: 2px dashed var(--accent);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .challenge-card h3 {
+            color: #B45309;
+            margin-bottom: 8px;
+        }
+
+        .penalty-highlight {
+            color: var(--danger);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1 id="header-title">AI English Assessment</h1>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+    </div>
+
+    <!-- SCHERMATA 1: ACQUISIZIONE LEAD -->
+    <div class="screen active" id="screen-lead">
+        <h2>Inizia la tua Sfida</h2>
+        <p class="subtitle">Scopri il tuo livello preciso da 1 a 50 ed entra nel programma ad incentivo gratuito.</p>
+        
+        <div class="form-group">
+            <label for="username">Nome completo</label>
+            <input type="text" id="username" placeholder="Es. Roberto Calculli">
+        </div>
+        <div class="form-group">
+            <label for="useremail">Indirizzo Email</label>
+            <input type="email" id="useremail" placeholder="Es. nome@azienda.com">
+        </div>
+
+        <button class="btn btn-accent" onclick="startAssessment()">
+            Inizia il Test <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- SCHERMATA 2: READING TEST -->
+    <div class="screen" id="screen-reading">
+        <h2>Sezione 1: Reading</h2>
+        <p class="subtitle">Leggi il testo dell'AI Agent e rispondi correttamente.</p>
+        <div class="question-box" id="reading-text">
+            "Yesterday, Sarah wanted to go for a walk, but it started raining heavily. Instead of going out, she decided to stay home."
+        </div>
+        <p style="margin-bottom: 12px; font-weight: 600;">Why did Sarah stay at home?</p>
+        <ul class="options-list">
+            <li class="option-card" onclick="nextSection('listening')">Because she was tired.</li>
+            <li class="option-card" onclick="nextSection('listening')">Because it was raining heavily.</li>
+            <li class="option-card" onclick="nextSection('listening')">Because she wanted to watch TV.</li>
+        </ul>
+    </div>
+
+    <!-- SCHERMATA 3: LISTENING TEST -->
+    <div class="screen" id="screen-listening">
+        <h2>Sezione 2: Listening</h2>
+        <p class="subtitle">Clicca per ascoltare la traccia audio dell'AI Agent.</p>
+        
+        <div class="audio-trigger" onclick="playAudio()">
+            <i class="fas fa-volume-up"></i>
+        </div>
+        <p id="audio-status" style="text-align: center; color: var(--secondary); font-weight: 500; margin-bottom: 15px;">Ascolta l'audio</p>
+
+        <p style="margin-bottom: 12px; font-weight: 600;">What is the speaker discussing?</p>
+        <ul class="options-list">
+            <li class="option-card" onclick="nextSection('speaking')">A delayed business invoice.</li>
+            <li class="option-card" onclick="nextSection('speaking')">A flight cancellation.</li>
+            <li class="option-card" onclick="nextSection('speaking')">A family dinner.</li>
+        </ul>
+    </div>
+
+    <!-- SCHERMATA 4: SPEAKING TEST -->
+    <div class="screen" id="screen-speaking">
+        <h2>Sezione 3: Speaking</h2>
+        <p class="subtitle">Premi il microfono e descrivi il tuo lavoro o i tuoi hobby per 15 secondi.</p>
+        
+        <div class="mic-trigger" id="mic-btn" onclick="toggleRecording()">
+            <i class="fas fa-microphone"></i>
+        </div>
+        <p id="mic-status" style="text-align: center; font-weight: 600; color: #6B7280;">Clicca per parlare</p>
+
+        <button class="btn btn-accent" id="finish-btn" style="margin-top: 30px; display: none;" onclick="showResults()">
+            Analizza Risultati <i class="fas fa-chart-line"></i>
+        </button>
+    </div>
+
+    <!-- SCHERMATA 5: RISULTATO E PROPOSTA SFIDA -->
+    <div class="screen" id="screen-results">
+        <h2>Il tuo Livello AI</h2>
+        <p class="subtitle">Ottimo lavoro, <span id="res-name" style="font-weight:600; color:var(--primary);">Utente</span>! L'AI Agent ha calcolato il tuo livello attuale.</p>
+        
+        <div class="badge-container">
+            <div class="level-badge" id="final-level">18</div>
+            <p style="margin-top: 10px; font-weight: 600; color: var(--secondary);">Livello Intermedio (B1)</p>
+        </div>
+
+        <div class="challenge-card">
+            <h3>🛡️ Scommetti sulla tua costanza!</h3>
+            <p style="font-size: 0.9rem; line-height: 1.4; color: #4B5563;">
+                Il tuo obiettivo è raggiungere il **Livello 19** in **10 giorni**. 
+                Studia 10 minuti al giorno (con 5 min di Chat AI). Se ci riesci, l'app resterà **GRATUITA**. Se fallisci o salti un giorno, si attiva la <span class="penalty-highlight">penale monetaria progressiva</span>.
+            </p>
+        </div>
+
+        <button class="btn btn-accent" style="margin-top: 20px;" onclick="alert('Prototipo terminato! Reindirizzamento al gateway di pagamento sicuro...')">
+            Accetta la Sfida e Attiva Gratis <i class="fas fa-bolt"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    let userData = { name: '', email: '' };
+
+    function setProgress(percent) {
+        document.getElementById('progress').style.width = percent + '%';
+    }
+
+    function startAssessment() {
+        const name = document.getElementById('username').value.trim();
+        const email = document.getElementById('useremail').value.trim();
+
+        if(!name || !email) {
+            alert('Per favore, inserisci nome ed email per registrare i tuoi progressi nel test.');
+            return;
+        }
+
+        userData.name = name;
+        userData.email = email;
+        document.getElementById('res-name').innerText = name;
+
+        document.getElementById('screen-lead').classList.remove('active');
+        document.getElementById('screen-reading').classList.add('active');
+        document.getElementById('header-title').innerText = "Fase 1: Lettura";
+        setProgress(25);
+    }
+
+    function nextSection(section) {
+        // Nasconde tutte le schermate del test
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        
+        if(section === 'listening') {
+            document.getElementById('screen-listening').classList.add('active');
+            document.getElementById('header-title').innerText = "Fase 2: Ascolto";
+            setProgress(50);
+        } else if(section === 'speaking') {
+            document.getElementById('screen-speaking').classList.add('active');
+            document.getElementById('header-title').innerText = "Fase 3: Parlato";
+            setProgress(75);
+        }
+    }
+
+    function playAudio() {
+        const status = document.getElementById('audio-status');
+        status.innerText = "🔊 Riproduzione in corso...";
+        
+        // Utilizza il sintetizzatore nativo del browser per simulare l'ascolto dell'AI Agent
+        let msg = new SpeechSynthesisUtterance("Attention passengers for the 10:45 Express to Edinburgh. This train has been delayed due to signaling problems.");
+        msg.lang = 'en-US';
+        msg.onend = function() {
+            status.innerText = "🟢 Ascolto completato. Rispondi alla domanda.";
+        };
+        window.speechSynthesis.speak(msg);
+    }
+
+    let isRecording = false;
+    function toggleRecording() {
+        const micBtn = document.getElementById('mic-btn');
+        const status = document.getElementById('mic-status');
+        const finishBtn = document.getElementById('finish-btn');
+
+        if(!isRecording) {
+            isRecording = true;
+            micBtn.classList.add('recording');
+            status.innerText = "🛑 Registrazione attiva... Parla del tuo lavoro.";
+            
+            // Simula fine registrazione automatica dopo 5 secondi
+            setTimeout(() => {
+                if(isRecording) {
+                    toggleRecording();
+                }
+            }, 5000);
+        } else {
+            isRecording = false;
+            micBtn.classList.remove('recording');
+            status.innerText = "✅ Traccia audio acquisita con successo dall'AI Agent!";
+            finishBtn.style.display = 'flex';
+        }
+    }
+
+    function showResults() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-results').classList.add('active');
+        document.getElementById('header-title').innerText = "Verdetto Finale";
+        setProgress(100);
+
+        // Simulazione calcolo dinamico del punteggio (Genera un livello realistico es. 18)
+        document.getElementById('final-level').innerText = "18";
+    }
+</script>
+
+</body>
+</html>
