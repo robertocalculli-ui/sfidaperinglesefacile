@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson & Ada - Full Prototype</title>
+    <title>Nelson & Ada - Full Interactive Prototype</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
@@ -26,57 +26,71 @@
         }
 
         .header { background: var(--primary); color: white; padding: 20px; text-align: center; position: relative; }
-        .header h1 { font-size: 1.2rem; font-weight: 600; }
+        .header h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0; }
+        
         .progress-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.2); position: absolute; bottom: 0; left: 0; }
         .progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
 
         .timer-banner { background: #FEF3C7; color: #92400E; padding: 8px; text-align: center; font-weight: 700; font-size: 0.9rem; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
-        .screen { padding: 24px; flex: 1; display: none; flex-direction: column; justify-content: center; }
+        .screen { padding: 24px; flex: 1; display: none; flex-direction: column; justify-content: flex-start; overflow-y: auto; }
         .screen.active { display: flex; }
-        h2 { font-size: 1.4rem; margin-bottom: 8px; color: var(--primary); text-align: center; }
+        
+        h2 { font-size: 1.4rem; margin-bottom: 8px; color: var(--primary); text-align: center; margin-top: 10px; }
         p.subtitle { color: #6B7280; text-align: center; margin-bottom: 24px; font-size: 0.95rem; }
 
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; }
+        input[type="text"], input[type="email"] { width: 100%; padding: 12px 16px; border: 2px solid #E5E7EB; border-radius: 12px; font-size: 1rem; }
+        
         .btn {
             background: var(--secondary); color: white; border: none; padding: 14px 20px; border-radius: 12px;
-            font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; margin-top: 12px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; margin-top: 20px; transition: 0.2s;
         }
         .btn:hover { background: var(--primary); }
+        .btn:disabled { background: #9CA3AF; cursor: not-allowed; }
         .btn-accent { background: var(--accent); }
+        .btn-accent:hover { background: #D97706; }
 
-        /* Tutor Cards */
         .tutor-container { display: flex; gap: 16px; margin: 20px 0; }
         .tutor-card { flex: 1; border: 2px solid #E5E7EB; border-radius: 16px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .tutor-card:hover, .tutor-card.selected { border-color: var(--secondary); background: #EFF6FF; }
+        .tutor-card.selected { border-color: var(--secondary); background: #EFF6FF; }
         .tutor-avatar { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: white; }
         .avatar-ada { background: #EC4899; }
         .avatar-nelson { background: #3B82F6; }
 
         .question-box { background: #F9FAFB; border-radius: 16px; padding: 16px; margin-bottom: 20px; border-left: 4px solid var(--secondary); font-style: italic; line-height: 1.5; }
-        .options-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
         .option-card { background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
         .option-card:hover { border-color: var(--secondary); background: #EFF6FF; }
 
-        .audio-trigger, .mic-trigger { width: 75px; height: 75px; border-radius: 50%; background: #EFF6FF; color: var(--secondary); display: flex; justify-content: center; align-items: center; font-size: 1.6rem; margin: 15px auto; cursor: pointer; border: 2px solid var(--secondary); }
+        .audio-trigger, .mic-trigger { width: 75px; height: 75px; border-radius: 50%; background: #EFF6FF; color: var(--secondary); display: flex; justify-content: center; align-items: center; font-size: 1.6rem; margin: 15px auto; cursor: pointer; border: 2px solid var(--secondary); transition: 0.3s; }
         .mic-trigger.recording { background: var(--danger); color: white; border-color: var(--danger); animation: pulse 1.5s infinite; }
         
-        /* Chat Box */
-        .chat-box { flex: 1; border: 1px solid #E5E7EB; border-radius: 16px; background: #F9FAFB; height: 220px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-        .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; }
+        .chat-box { flex: 1; min-height: 250px; border: 1px solid #E5E7EB; border-radius: 16px; background: #F9FAFB; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; }
         .msg.agent { background: #E0F2FE; color: #0369A1; align-self: flex-start; border-bottom-left-radius: 2px; }
         .msg.user { background: var(--secondary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .chat-input-area { display: flex; gap: 8px; }
+        .chat-input-area { display: flex; gap: 8px; margin-top: auto; }
         .chat-input-area input { flex: 1; padding: 12px; border: 2px solid #E5E7EB; border-radius: 12px; font-size: 0.95rem; }
+        .chat-btn { background: var(--secondary); color: white; border: none; border-radius: 12px; padding: 0 20px; cursor: pointer; }
 
-        .step-counter { text-align: center; font-weight: 700; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase; font-size: 0.8rem; }
-        .timer-display { font-size: 1.4rem; font-weight: 700; color: var(--danger); margin-top: 5px; text-align: center; }
+        .step-counter { text-align: center; font-weight: 700; color: var(--secondary); margin-bottom: 15px; text-transform: uppercase; font-size: 0.8rem; }
+        .timer-display { font-size: 1.8rem; font-weight: 700; color: var(--danger); margin-top: 10px; text-align: center; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="timer-banner" id="global-timer-banner" style="display:none;">
-        <i class="fas fa-clock animate-pulse"></i> Tempo Sessione Rimanente: <span id="session-countdown">10:00</span>
+        <i class="fas fa-clock animate-pulse"></i> Tempo Lezione Rimanente: <span id="session-countdown">10:00</span>
     </div>
 
     <div class="header">
@@ -84,36 +98,362 @@
         <div class="progress-bar-container"><div class="progress-bar" id="progress"></div></div>
     </div>
 
+    <!-- 1. ACQUISIZIONE LEAD -->
     <div class="screen active" id="screen-lead">
         <h2>Inizia la tua Sfida</h2>
-        <p class="subtitle">Verifica Lettura, Ascolto e Parlato per calcolare il tuo livello (1-50).</p>
-        <div class="form-group"><label>Nome completo</label><input type="text" id="username" placeholder="Es. Roberto Calculli"></div>
-        <div class="form-group"><label>Indirizzo Email</label><input type="email" id="useremail" placeholder="Es. nome@azienda.com"></div>
-        <button class="btn btn-accent" onclick="startAssessment()">Inizia il Test <i class="fas fa-arrow-right"></i></button>
+        <p class="subtitle">Verifica Lettura, Ascolto e Parlato per calcolare il tuo livello iniziale (1-50).</p>
+        <div class="form-group">
+            <label>Nome completo</label>
+            <input type="text" id="username" placeholder="Es. Roberto Calculli">
+        </div>
+        <div class="form-group">
+            <label>Indirizzo Email</label>
+            <input type="email" id="useremail" placeholder="Es. nome@azienda.com">
+        </div>
+        <!-- Il type="button" previene il reload accidentale del form in alcuni browser -->
+        <button type="button" class="btn btn-accent" onclick="startAssessment()">Inizia il Test <i class="fas fa-arrow-right"></i></button>
     </div>
 
+    <!-- 2. ASSESSMENT: READING -->
     <div class="screen" id="screen-assessment-reading">
         <div class="step-counter" id="assess-reading-counter">Test d'Ingresso: Lettura (1 di 5)</div>
-        <div class="question-box" id="assess-reading-text">Caricamento...</div>
-        <p style="margin-bottom: 12px; font-weight: 600;" id="assess-reading-question">Domanda...</p>
+        <div class="question-box" id="assess-reading-text">Loading text...</div>
+        <p style="margin-bottom: 12px; font-weight: 600;" id="assess-reading-question">Question...</p>
         <ul class="options-list" id="assess-reading-options"></ul>
     </div>
 
+    <!-- 3. ASSESSMENT: LISTENING -->
     <div class="screen" id="screen-assessment-listening">
         <div class="step-counter" id="assess-listening-counter">Test d'Ingresso: Ascolto (1 di 3)</div>
         <div class="audio-trigger" onclick="playAssessAudio()"><i class="fas fa-volume-up"></i></div>
         <p id="assess-audio-status" style="text-align: center; color: var(--secondary); font-weight: 500; margin-bottom: 15px;">Clicca per ascoltare</p>
-        <p style="margin-bottom: 12px; font-weight: 600;" id="assess-listening-question">Domanda...</p>
+        <p style="margin-bottom: 12px; font-weight: 600;" id="assess-listening-question">Question...</p>
         <ul class="options-list" id="assess-listening-options"></ul>
     </div>
 
+    <!-- 4. ASSESSMENT: SPEAKING -->
     <div class="screen" id="screen-assessment-speaking">
         <div class="step-counter">Test d'Ingresso: Parlato</div>
-        <p class="subtitle">Parla per almeno 30 secondi per permettere all'AI di valutare la tua fluenza.</p>
+        <p class="subtitle">Parla per 30 secondi. L'AI valuterà la tua fluenza.</p>
         <div class="question-box" style="text-align: center; font-weight: 600; color: var(--primary);">
-            🎤 "Tell me about your job, your daily routine, and what you love doing in your free time."
+            🎤 "Tell me about your job and daily routine."
         </div>
         <div class="mic-trigger" id="assess-mic-btn" onclick="handleAssessSpeaking()"><i class="fas fa-microphone"></i></div>
         <div class="timer-display" id="assess-timer-output">00:30</div>
-        <p id="assess-mic-status" style="text-align: center; font-weight: 600; color: #6B7280;">Clicca sul microfono per iniziare</p>
-        <button class="btn btn-accent" id="assess-finish-btn" style
+        <p id="assess-mic-status" style="text-align: center; font-weight: 600; color: #6B7280;">Clicca il microfono per iniziare</p>
+        <button type="button" class="btn btn-accent" id="assess-finish-btn" style="display: none;" onclick="goToTutorSelection()">Elabora Livello <i class="fas fa-magic"></i></button>
+    </div>
+
+    <!-- 5. SCELTA TUTOR AI -->
+    <div class="screen" id="screen-tutor-select">
+        <h2>Il tuo livello è 42! (C1)</h2>
+        <p class="subtitle">Livello Avanzato confermato. Scegli il tuo Tutor AI per avviare la Lezione 1.</p>
+        <div class="tutor-container">
+            <div class="tutor-card" id="card-ada" onclick="selectTutor('Ada')">
+                <div class="tutor-avatar avatar-ada"><i class="fas fa-user-astronaut"></i></div>
+                <strong>Ada</strong><p style="font-size:0.8rem; color:#6B7280; margin-top:4px;">Empatica</p>
+            </div>
+            <div class="tutor-card" id="card-nelson" onclick="selectTutor('Nelson')">
+                <div class="tutor-avatar avatar-nelson"><i class="fas fa-user-tie"></i></div>
+                <strong>Nelson</strong><p style="font-size:0.8rem; color:#6B7280; margin-top:4px;">Business</p>
+            </div>
+        </div>
+        <button type="button" class="btn btn-accent" id="start-lesson-btn" disabled onclick="startLessonOne()">Inizia Lezione (10 min) <i class="fas fa-play"></i></button>
+    </div>
+
+    <!-- 6. LEZIONE 1: READING -->
+    <div class="screen" id="screen-l1-reading">
+        <div class="step-counter" id="l1-reading-counter">Lezione 1: Lettura (1 di 5)</div>
+        <div class="question-box" id="l1-reading-text">Loading...</div>
+        <p style="margin-bottom: 12px; font-weight: 600;" id="l1-reading-question">Question...</p>
+        <ul class="options-list" id="l1-reading-options"></ul>
+    </div>
+
+    <!-- 7. LEZIONE 1: LISTENING -->
+    <div class="screen" id="screen-l1-listening">
+        <div class="step-counter" id="l1-listening-counter">Lezione 1: Ascolto (1 di 3)</div>
+        <div class="audio-trigger" onclick="playL1Audio()"><i class="fas fa-volume-up"></i></div>
+        <p id="l1-audio-status" style="text-align: center; color: var(--secondary); font-weight: 500; margin-bottom: 15px;">Clicca per ascoltare il Tutor</p>
+        <p style="margin-bottom: 12px; font-weight: 600;" id="l1-listening-question">Question...</p>
+        <ul class="options-list" id="l1-listening-options"></ul>
+    </div>
+
+    <!-- 8. LEZIONE 1: CHAT -->
+    <div class="screen" id="screen-l1-chat">
+        <div class="step-counter" id="l1-chat-identity">Conversazione con AI</div>
+        <div class="chat-box" id="l1-chat-messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="l1-chat-input" placeholder="Scrivi in inglese qui..." onkeypress="handleEnter(event)">
+            <button type="button" class="chat-btn" onclick="sendL1ChatMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- 9. FINE LEZIONE -->
+    <div class="screen" id="screen-end">
+        <h2>🔥 Giorno 1 Completato!</h2>
+        <div class="question-box" style="border-left-color: var(--success); background: #ECFDF5; color: #065F46; margin-top: 20px;">
+            <strong>Resoconto di <span id="end-tutor-name">Tutor</span>:</strong><br>
+            "Grandioso! Hai completato i 10 minuti obbligatori superando i moduli di lettura, ascolto e conversazione. Il tuo Streak è al sicuro!"
+        </div>
+        <button type="button" class="btn" onclick="location.reload()">Ricomincia App</button>
+    </div>
+</div>
+
+<script>
+    // === DATI DI TEST ===
+    const assessReading = [
+        { t: "Sarah loves cooking. Today she is baking a cake for her friend's birthday.", q: "What is Sarah doing today?", o: ["Buying a cake", "Baking a cake", "Going to a party"] },
+        { t: "John works at a tech firm in Milan. He takes the train every morning at 7:30 AM.", q: "How does John go to work?", o: ["By car", "By train", "On foot"] },
+        { t: "The marketing team postponed the meeting because the director was late.", q: "Why was the meeting postponed?", o: ["The director was late", "The room was full", "It was raining"] },
+        { t: "If it rains tomorrow, we will have to cancel the outdoor tennis match.", q: "What depends on the weather?", o: ["The indoor dinner", "The tennis match", "The flight ticket"] },
+        { t: "Despite the financial crisis, the corporation expanded its European distribution hub.", q: "What did the corporation do?", o: ["Closed a hub", "Expanded a hub", "Lost money"] }
+    ];
+    
+    const assessListening = [
+        { s: "Welcome to the grand hotel. Your room is on the third floor, number 302.", q: "What is the room number?", o: ["Room 203", "Room 302", "Room 320"] },
+        { s: "Please note that the conference has been rescheduled to Thursday afternoon.", q: "When will the conference take place?", o: ["Tuesday", "Thursday afternoon", "Friday morning"] },
+        { s: "Our company's quarterly revenue grew by 15 percent.", q: "What was the revenue growth?", o: ["5 percent", "12 percent", "15 percent"] }
+    ];
+
+    const l1Reading = [
+        { t: "The CEO underscored the necessity of fostering an agile corporate culture.", q: "What is the goal?", o: ["Increase costs", "Agile corporate culture", "Slow down decisions"] },
+        { t: "Had the board anticipated the shift, they would have allocated more capital.", q: "Did the board expect the change?", o: ["Yes completely", "No they didn't", "Text doesn't say"] },
+        { t: "The legal department is thoroughly vetting the side letters.", q: "What is being reviewed?", o: ["Main contracts", "Side letters", "PR updates"] },
+        { t: "Emerging startups rarely disrupt sectors without CRM investment.", q: "What is crucial?", o: ["CRM tools", "Avoiding funding", "Hiring fewer people"] },
+        { t: "Strategic alignment yielded an uptick in production.", q: "What was the outcome?", o: ["Performance drop", "Uptick in production", "Confusion"] }
+    ];
+
+    const l1Listening = [
+        { s: "We need to benchmark our core metrics against competitors before Friday.", q: "What is required?", o: ["Change date", "Benchmark metrics", "Hire designers"] },
+        { s: "Scaling into the French market requires a structured commission framework.", q: "What framework is needed?", o: ["Commission framework", "Branding plan", "Pricing cut"] },
+        { s: "The team integrated speech-to-text, reducing latency.", q: "What improved?", o: ["Lower bills", "Reduced latency", "New layout"] }
+    ];
+
+    // === VARIABILI GLOBALI ===
+    let arIdx = 0, alIdx = 0, lrIdx = 0, llIdx = 0;
+    let selectedTutor = "";
+    let globalTimerSeconds = 600;
+    let globalTimerInterval = null;
+
+    // === UTILITY UTENTE ===
+    function setScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function setProgress(p) { document.getElementById('progress').style.width = p + '%'; }
+
+    // === 1. START ASSESSMENT ===
+    function startAssessment() {
+        const name = document.getElementById('username').value.trim();
+        const email = document.getElementById('useremail').value.trim();
+        
+        if (name === "" || email === "") {
+            alert("Compila sia il nome che l'email per procedere.");
+            return;
+        }
+
+        document.getElementById('header-title').innerText = "Fase 1: Lettura";
+        setScreen('screen-assessment-reading');
+        loadAssessReading();
+    }
+
+    function loadAssessReading() {
+        setProgress((arIdx + 1) * 5);
+        document.getElementById('assess-reading-counter').innerText = `Test d'Ingresso: Lettura (${arIdx + 1} di 5)`;
+        let d = assessReading[arIdx];
+        document.getElementById('assess-reading-text').innerText = `"${d.t}"`;
+        document.getElementById('assess-reading-question').innerText = d.q;
+        
+        let html = "";
+        d.o.forEach((opt) => { html += `<li class="option-card" onclick="nextAssessReading()">${opt}</li>`; });
+        document.getElementById('assess-reading-options').innerHTML = html;
+    }
+
+    function nextAssessReading() {
+        arIdx++;
+        if (arIdx < 5) loadAssessReading();
+        else {
+            document.getElementById('header-title').innerText = "Fase 2: Ascolto";
+            setScreen('screen-assessment-listening');
+            loadAssessListening();
+        }
+    }
+
+    // === 2. ASSESS LISTENING ===
+    function loadAssessListening() {
+        setProgress(25 + (alIdx * 5));
+        document.getElementById('assess-listening-counter').innerText = `Test d'Ingresso: Ascolto (${alIdx + 1} di 3)`;
+        document.getElementById('assess-audio-status').innerText = "Clicca per ascoltare";
+        
+        let d = assessListening[alIdx];
+        document.getElementById('assess-listening-question').innerText = d.q;
+        let html = "";
+        d.o.forEach((opt) => { html += `<li class="option-card" onclick="nextAssessListening()">${opt}</li>`; });
+        document.getElementById('assess-listening-options').innerHTML = html;
+    }
+
+    function playAssessAudio() {
+        document.getElementById('assess-audio-status').innerText = "🔊 Riproduzione audio...";
+        let msg = new SpeechSynthesisUtterance(assessListening[alIdx].s);
+        msg.lang = 'en-US';
+        msg.onend = () => { document.getElementById('assess-audio-status').innerText = "🟢 Rispondi alla domanda."; };
+        window.speechSynthesis.speak(msg);
+    }
+
+    function nextAssessListening() {
+        alIdx++;
+        if (alIdx < 3) loadAssessListening();
+        else {
+            document.getElementById('header-title').innerText = "Fase 3: Parlato";
+            setScreen('screen-assessment-speaking');
+            setProgress(45);
+        }
+    }
+
+    // === 3. ASSESS SPEAKING ===
+    let assessSpeakingRunning = false;
+    let assessTime = 30;
+    function handleAssessSpeaking() {
+        if(assessSpeakingRunning) return;
+        assessSpeakingRunning = true;
+        
+        document.getElementById('assess-mic-btn').classList.add('recording');
+        document.getElementById('assess-mic-status').innerText = "🎙️ Sto registrando...";
+        
+        let int = setInterval(() => {
+            assessTime--;
+            document.getElementById('assess-timer-output').innerText = `00:${assessTime < 10 ? '0'+assessTime : assessTime}`;
+            if(assessTime <= 0) {
+                clearInterval(int);
+                document.getElementById('assess-mic-btn').classList.remove('recording');
+                document.getElementById('assess-mic-status').innerText = "✅ Test completato!";
+                document.getElementById('assess-finish-btn').style.display = 'flex';
+                setProgress(50);
+            }
+        }, 1000);
+    }
+
+    // === 4. SELECT TUTOR ===
+    function goToTutorSelection() {
+        document.getElementById('header-title').innerText = "Scegli l'AI Agent";
+        setScreen('screen-tutor-select');
+    }
+
+    function selectTutor(name) {
+        selectedTutor = name;
+        document.getElementById('card-ada').classList.remove('selected');
+        document.getElementById('card-nelson').classList.remove('selected');
+        document.getElementById(`card-${name.toLowerCase()}`).classList.add('selected');
+        document.getElementById('start-lesson-btn').removeAttribute('disabled');
+    }
+
+    // === 5. LEZIONE 1 ===
+    function startLessonOne() {
+        document.getElementById('header-title').innerText = `Lezione 1 con ${selectedTutor}`;
+        document.getElementById('global-timer-banner').style.display = 'flex';
+        setScreen('screen-l1-reading');
+        
+        // Avvia Timer Globale 10 Minuti
+        globalTimerInterval = setInterval(() => {
+            globalTimerSeconds--;
+            let m = Math.floor(globalTimerSeconds / 60); 
+            let s = globalTimerSeconds % 60;
+            document.getElementById('session-countdown').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+            if(globalTimerSeconds <= 0) { clearInterval(globalTimerInterval); finishDemo(); }
+        }, 1000);
+
+        loadL1Reading();
+    }
+
+    // READING LEZ 1
+    function loadL1Reading() {
+        setProgress(50 + (lrIdx * 4));
+        document.getElementById('l1-reading-counter').innerText = `Lezione 1: Lettura (${lrIdx + 1} di 5)`;
+        let d = l1Reading[lrIdx];
+        document.getElementById('l1-reading-text').innerText = `"${d.t}"`;
+        document.getElementById('l1-reading-question').innerText = d.q;
+        let html = "";
+        d.o.forEach((opt) => { html += `<li class="option-card" onclick="nextL1Reading()">${opt}</li>`; });
+        document.getElementById('l1-reading-options').innerHTML = html;
+    }
+
+    function nextL1Reading() {
+        lrIdx++;
+        if (lrIdx < 5) loadL1Reading();
+        else { setScreen('screen-l1-listening'); loadL1Listening(); }
+    }
+
+    // LISTENING LEZ 1
+    function loadL1Listening() {
+        setProgress(70 + (llIdx * 5));
+        document.getElementById('l1-listening-counter').innerText = `Lezione 1: Ascolto (${llIdx + 1} di 3)`;
+        document.getElementById('l1-audio-status').innerText = `Clicca per ascoltare ${selectedTutor}`;
+        let d = l1Listening[llIdx];
+        document.getElementById('l1-listening-question').innerText = d.q;
+        let html = "";
+        d.o.forEach((opt) => { html += `<li class="option-card" onclick="nextL1Listening()">${opt}</li>`; });
+        document.getElementById('l1-listening-options').innerHTML = html;
+    }
+
+    function playL1Audio() {
+        document.getElementById('l1-audio-status').innerText = `🔊 ${selectedTutor} sta parlando...`;
+        let msg = new SpeechSynthesisUtterance(l1Listening[llIdx].s);
+        msg.lang = 'en-US';
+        msg.onend = () => { document.getElementById('l1-audio-status').innerText = "🟢 Rispondi alla domanda."; };
+        window.speechSynthesis.speak(msg);
+    }
+
+    function nextL1Listening() {
+        llIdx++;
+        if (llIdx < 3) loadL1Listening();
+        else { setScreen('screen-l1-chat'); initL1Chat(); }
+    }
+
+    // CHAT LEZ 1
+    function initL1Chat() {
+        setProgress(90);
+        document.getElementById('l1-chat-identity').innerText = `Conversazione con ${selectedTutor}`;
+        let msg = selectedTutor === "Ada" ? 
+            "Hello! Let's talk about corporate strategy. What is the main priority?" : 
+            "Let's get to work. How do we approach the new French market?";
+        appendChat(selectedTutor, msg, 'agent');
+    }
+
+    function appendChat(sender, txt, role) {
+        let box = document.getElementById('l1-chat-messages');
+        let div = document.createElement('div');
+        div.className = `msg ${role}`;
+        div.innerHTML = `<strong>${sender}:</strong> ${txt}`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function handleEnter(e) { if(e.key === 'Enter') sendL1ChatMessage(); }
+
+    function sendL1ChatMessage() {
+        let input = document.getElementById('l1-chat-input');
+        let text = input.value.trim();
+        if(!text) return;
+        
+        appendChat('Tu', text, 'user');
+        input.value = "";
+
+        setTimeout(() => {
+            appendChat(selectedTutor, "Great response! Your grammar is solid. We're done for today.", 'agent');
+            setProgress(100);
+            setTimeout(finishDemo, 2500);
+        }, 1200);
+    }
+
+    // === 6. FINISH ===
+    function finishDemo() {
+        clearInterval(globalTimerInterval);
+        document.getElementById('global-timer-banner').style.display = 'none';
+        document.getElementById('header-title').innerText = "Missione Compiuta";
+        document.getElementById('end-tutor-name').innerText = selectedTutor;
+        setScreen('screen-end');
+    }
+</script>
+</body>
+</html>
