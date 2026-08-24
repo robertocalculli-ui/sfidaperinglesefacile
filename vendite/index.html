@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SalesHub - Gestione Prospect & Archivio Vendite</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<style>
+    :root {
+        --primary: #1E3A8A;
+        --primary-dark: #152a63;
+        --secondary: #3B82F6;
+        --accent: #F59E0B;
+        --danger: #EF4444;
+        --success: #10B981;
+        --violet: #8B5CF6;
+        --pink: #EC4899;
+        --bg: #F3F4F6;
+        --card-bg: #FFFFFF;
+        --text: #1F2937;
+        --muted: #6B7280;
+        --border: #E5E7EB;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+    .hidden { display: none !important; }
+
+    /* ---------- LOGIN ---------- */
+    #view-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { width: 100%; max-width: 420px; background: var(--card-bg); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); padding: 32px; }
+    .login-card h1 { color: var(--primary); text-align: center; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .login-card .subtitle { text-align: center; color: var(--muted); margin: 8px 0 24px; font-size: 0.9rem; }
+    .role-tabs { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+    .role-tab { flex: 1; border: none; background: transparent; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; color: var(--muted); }
+    .role-tab.active { background: var(--primary); color: white; }
+    .login-card label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; }
+    .login-card input, select, textarea { width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; }
+    .login-card p.info { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; line-height: 1.4; }
+    .btn { background: var(--secondary); color: white; border: none; padding: 12px 18px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn:hover { background: var(--primary); }
+    .btn-block { width: 100%; margin-top: 16px; }
+    .btn-accent { background: var(--accent); }
+    .btn-accent:hover { background: #D97706; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #B91C1C; }
+    .btn-ghost { background: transparent; color: var(--primary); border: 2px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-sm { padding: 8px 12px; font-size: 0.85rem; }
+
+    .demo-banner { background: #FEF3C7; color: #92400E; font-size: 0.78rem; padding: 8px 14px; text-align: center; border-radius: 10px; margin-top: 18px; line-height: 1.4; }
+
+    /* ---------- APP SHELL ---------- */
+    #view-app { display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: var(--primary); color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .user-info { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; }
+    .role-pill { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .icon-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; }
+    .icon-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .layout { display: flex; flex: 1; min-height: 0; }
+    .sidebar { width: 220px; background: white; border-right: 1px solid var(--border); padding: 16px 12px; flex-shrink: 0; }
+    .sidebar button { width: 100%; text-align: left; background: transparent; border: none; padding: 12px 14px; border-radius: 10px; margin-bottom: 4px; cursor: pointer; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 10px; font-size: 0.92rem; }
+    .sidebar button:hover { background: var(--bg); }
+    .sidebar button.active { background: #EFF6FF; color: var(--primary); font-weight: 700; }
+    .content { flex: 1; padding: 24px 28px; overflow-y: auto; }
+
+    .content-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+    .content-header h2 { color: var(--primary); font-size: 1.4rem; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .toolbar input, .toolbar select { padding: 9px 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 0.88rem; }
+
+    /* ---------- STAT CARDS ---------- */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: white; border-radius: 14px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .stat-card .n { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .stat-card .l { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ---------- KANBAN ---------- */
+    .kanban { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+    .kcol { background: #F9FAFB; border-radius: 14px; min-width: 250px; max-width: 250px; flex-shrink: 0; display: flex; flex-direction: column; max-height: 72vh; }
+    .kcol-head { padding: 12px 14px; font-weight: 700; font-size: 0.85rem; border-bottom: 3px solid; border-radius: 14px 14px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .kcol-body { padding: 10px; overflow-y: auto; flex: 1; min-height: 60px; }
+    .kcol-body.dragover { background: #EFF6FF; }
+    .kcard { background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; border-left: 4px solid var(--secondary); }
+    .kcard:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+    .kcard .nome { font-weight: 700; font-size: 0.92rem; }
+    .kcard .azienda { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+    .kcard .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.75rem; color: var(--muted); }
+    .kcard .valore { font-weight: 700; color: var(--success); }
+    .kcard .overdue { color: var(--danger); font-weight: 700; }
+
+    /* ---------- TABLE ---------- */
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    th, td { padding: 12px 14px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid var(--border); }
+    th { background: #F9FAFB; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
+    tr:hover td { background: #FAFAFA; cursor: pointer; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: white; display: inline-block; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 12px; color: var(--border); }
+
+    /* ---------- ARCHIVIO CARDS ---------- */
+    .archive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .doc-card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; }
+    .doc-card .cat { align-self: flex-start; background: #EFF6FF; color: var(--primary); font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; }
+    .doc-card .icon { font-size: 1.6rem; color: var(--secondary); margin-bottom: 8px; }
+    .doc-card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .doc-card p { font-size: 0.82rem; color: var(--muted); flex: 1; margin-bottom: 12px; line-height: 1.4; }
+    .doc-card .foot { display: flex; gap: 8px; font-size: 0.72rem; color: var(--muted); justify-content: space-between; align-items: center; margin-top: 6px; }
+
+    /* ---------- MODAL ---------- */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(17,24,39,0.5); align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: white; border-radius: 18px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 26px; position: relative; }
+    .modal-close { position: absolute; top: 18px; right: 18px; background: var(--bg); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
+    .modal h2 { color: var(--primary); margin-bottom: 18px; font-size: 1.25rem; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; }
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .modal-actions .btn { flex: 1; }
+
+    .stage-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .stage-chip { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; color: white; opacity: 0.55; }
+    .stage-chip.selected { opacity: 1; box-shadow: 0 0 0 2px white inset; }
+
+    .timeline { margin-top: 8px; max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: #F9FAFB; }
+    .timeline-item { font-size: 0.82rem; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-item .ts { color: var(--muted); font-size: 0.72rem; display: block; }
+    .note-add { display: flex; gap: 8px; margin-top: 8px; }
+    .note-add input { flex: 1; }
+
+    @media (max-width: 720px) {
+        .layout { flex-direction: column; }
+        .sidebar { width: 100%; display: flex; overflow-x: auto; }
+        .sidebar button { white-space: nowrap; width: auto; }
+        .form-row { flex-direction: column; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="view-login" class="view active">
+    <div class="login-card">
+        <h1><i class="fas fa-briefcase"></i> SalesHub</h1>
+        <p class="subtitle">Gestione Prospect & Archivio Materiali di Vendita</p>
+
+        <div class="role-tabs">
+            <button class="role-tab active" id="tab-role-venditore" onclick="switchLoginRole('venditore')">Venditore</button>
+            <button class="role-tab" id="tab-role-admin" onclick="switchLoginRole('admin')">Amministrazione</button>
+        </div>
+
+        <div id="login-venditore">
+            <div class="form-group">
+                <label>Il tuo nome</label>
+                <input id="login-name" list="venditori-list" placeholder="Es. Mario Rossi">
+                <datalist id="venditori-list"></datalist>
+            </div>
+            <button type="button" class="btn btn-block" onclick="loginVenditore()">Entra come Venditore <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <div id="login-admin" class="hidden">
+            <p class="info">Area riservata all'amministrazione: gestisci l'archivio materiali condiviso con la rete vendita e visualizza la panoramica di tutti i prospect.</p>
+            <button type="button" class="btn btn-accent btn-block" onclick="loginAdmin()">Entra come Amministratore <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <div class="demo-banner"><i class="fas fa-circle-info"></i> Prototipo dimostrativo: i dati vengono salvati solo nel browser locale (localStorage), non sono condivisi tra dispositivi diversi. Utile per validare il flusso prima di realizzare la versione con backend condiviso.</div>
+    </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="view-app" class="view hidden">
+    <div class="topbar">
+        <div class="brand"><i class="fas fa-briefcase"></i> SalesHub</div>
+        <div class="user-info">
+            <span class="role-pill" id="user-role-pill"></span>
+            <span id="user-name-label"></span>
+            <button class="icon-btn" title="Esci" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+    <div class="layout">
+        <nav class="sidebar" id="sidebar"></nav>
+        <main class="content" id="content"></main>
+    </div>
+</div>
+
+<!-- ============ MODAL: PROSPECT ============ -->
+<div class="modal-overlay" id="modal-prospect-overlay">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-prospect-overlay')"><i class="fas fa-times"></i></button>
+        <h2 id="prospect-modal-title">Nuovo Prospect</h2>
+        <input type="hidden" id="p-id">
+        <div class="form-row">
+            <div class="form-group"><label>Nome contatto *</label><input id="p-nome" placeholder="Es. Laura Bianchi"></div>
+            <div class="form-group"><label>Azienda *</label><input id="p-azienda" placeholder="Es. Bianchi Srl"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Telefono</label><input id="p-telefono" placeholder="+39 ..."></div>
+            <div class="form-group"><label>Email</label><input id="p-email" placeholder="nome@azienda.com"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Valore stimato (€)</label><input id="p-valore" type="number" min="0" placeholder="0"></div>
+            <div class="form-group"><label>Prossimo contatto</label><input id="p-data" type="date"></div>
+        </div>
+        <div class="form-group">
+            <label>Stato trattativa</label>
+            <div class="stage-picker" id="p-stage-picker"></div>
+        </div>
+        <div class="form-group" id="p-notes-wrap">
+            <label>Note</label>
+            <div class="timeline" id="p-timeline"></div>
+            <div class="note-add">
+                <input id="p-note-input" placeholder="Aggiungi una nota di attività...">
+                <button type="button" class="btn btn-sm" onclick="addNoteToProspect()"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-danger hidden" id="p-delete-btn" onclick="deleteProspect()"><i class="fas fa-trash"></i> Elimina</button>
+            <button type="button" class="btn" onclick="saveProspectForm()"><i class="fas fa-check"></i> Salva</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ MODAL: MATERIALE (upload, admin) ============ -->
+<div class="modal-overlay" id="modal-materiale-overlay">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-materiale-overlay')"><i class="fas fa-times"></i></button>
+        <h2>Carica Materiale</h2>
+        <div class="form-group"><label>Titolo *</label><input id="m-titolo" placeholder="Es. Listino Prezzi 2026"></div>
+        <div class="form-group">
+            <label>Categoria</label>
+            <select id="m-categoria">
+                <option>Listini Prezzi</option>
+                <option>Brochure Prodotto</option>
+                <option>Presentazioni</option>
+                <option>Script di Vendita</option>
+                <option>Case Study</option>
+                <option>Contrattualistica</option>
+                <option>Altro</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Descrizione</label><textarea id="m-descrizione" rows="3" placeholder="Breve descrizione del materiale..."></textarea></div>
+        <div class="form-group"><label>File (PDF, immagine, doc...)</label><input id="m-file" type="file"></div>
+        <div class="form-group"><label>Oppure link esterno (opzionale, in alternativa al file)</label><input id="m-link" placeholder="https://..."></div>
+        <div class="modal-actions">
+            <button type="button" class="btn" onclick="saveMateriale()"><i class="fas fa-cloud-upload-alt"></i> Carica</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// STATE & CONSTANTS
+// ============================================================
+const STAGES = [
+    { id: 'nuovo',        label: 'Nuovo Contatto',    color: '#3B82F6' },
+    { id: 'contattato',   label: 'Contattato',        color: '#F59E0B' },
+    { id: 'proposta',     label: 'Proposta Inviata',  color: '#8B5CF6' },
+    { id: 'negoziazione', label: 'Negoziazione',      color: '#EC4899' },
+    { id: 'vinto',        label: 'Chiuso Vinto',      color: '#10B981' },
+    { id: 'perso',        label: 'Chiuso Perso',      color: '#EF4444' }
+];
+const CATEGORIE_ICON = {
+    'Listini Prezzi': 'fa-tags', 'Brochure Prodotto': 'fa-book-open', 'Presentazioni': 'fa-display',
+    'Script di Vendita': 'fa-comments', 'Case Study': 'fa-chart-line', 'Contrattualistica': 'fa-file-contract', 'Altro': 'fa-file'
+};
+
+let currentUser = null;      // { ruolo: 'venditore'|'admin', nome }
+let currentTab = null;
+let pipelineSearch = '';
+let elencoFilterStato = '';
+let elencoSearch = '';
+let archivioFilterCat = '';
+let archivioSearch = '';
+
+function uid() { return 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8); }
+function stageInfo(id) { return STAGES.find(s => s.id === id) || STAGES[0]; }
+function fmtMoney(v) { return (Number(v) || 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }); }
+function fmtDate(d) { if (!d) return '-'; const dt = new Date(d); return dt.toLocaleDateString('it-IT'); }
+function isOverdue(d) { if (!d) return false; const today = new Date(); today.setHours(0,0,0,0); return new Date(d) < today; }
+
+// ============================================================
+// STORAGE HELPERS
+// ============================================================
+function getVenditori() { return JSON.parse(localStorage.getItem('sfi_venditori') || '[]'); }
+function addVenditore(nome) {
+    let list = getVenditori();
+    if (!list.includes(nome)) { list.push(nome); localStorage.setItem('sfi_venditori', JSON.stringify(list)); }
+}
+function getProspects(venditore) { return JSON.parse(localStorage.getItem('sfi_prospects_' + venditore) || '[]'); }
+function saveProspects(venditore, arr) { localStorage.setItem('sfi_prospects_' + venditore, JSON.stringify(arr)); }
+function getMateriali() { return JSON.parse(localStorage.getItem('sfi_materiali') || '[]'); }
+function saveMateriali(arr) {
+    try { localStorage.setItem('sfi_materiali', JSON.stringify(arr)); }
+    catch (e) { alert('Spazio di archiviazione del browser esaurito. Prova con un file più piccolo o elimina materiali non più utili.'); throw e; }
+}
+
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+function switchLoginRole(role) {
+    document.getElementById('tab-role-venditore').classList.toggle('active', role === 'venditore');
+    document.getElementById('tab-role-admin').classList.toggle('active', role === 'admin');
+    document.getElementById('login-venditore').classList.toggle('hidden', role !== 'venditore');
+    document.getElementById('login-admin').classList.toggle('hidden', role !== 'admin');
+}
+
+function populateVenditoriDatalist() {
+    document.getElementById('venditori-list').innerHTML = getVenditori().map(v => `<option value="${escapeHtml(v)}">`).join('');
+}
+
+function loginVenditore() {
+    const name = document.getElementById('login-name').value.trim();
+    if (!name) { alert('Inserisci il tuo nome per accedere.'); return; }
+    addVenditore(name);
+    currentUser = { ruolo: 'venditore', nome: name };
+    enterApp();
+}
+
+function loginAdmin() {
+    currentUser = { ruolo: 'admin', nome: 'Amministratore' };
+    enterApp();
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('view-app').classList.add('hidden');
+    document.getElementById('view-login').classList.remove('active');
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('login-name').value = '';
+    populateVenditoriDatalist();
+}
+
+function enterApp() {
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-app').classList.remove('hidden');
+    document.getElementById('user-role-pill').innerText = currentUser.ruolo === 'admin' ? 'Admin' : 'Venditore';
+    document.getElementById('user-name-label').innerText = currentUser.nome;
+    buildSidebar();
+    if (currentUser.ruolo === 'venditore') switchTab('pipeline');
+    else switchTab('archivio-admin');
+}
+
+// ============================================================
+// SIDEBAR / TABS
+// ============================================================
+function buildSidebar() {
+    const sb = document.getElementById('sidebar');
+    if (currentUser.ruolo === 'venditore') {
+        sb.innerHTML = `
+            <button data-tab="pipeline" onclick="switchTab('pipeline')"><i class="fas fa-columns"></i> Pipeline</button>
+            <button data-tab="elenco" onclick="switchTab('elenco')"><i class="fas fa-list"></i> Elenco Prospect</button>
+            <button data-tab="archivio-venditore" onclick="switchTab('archivio-venditore')"><i class="fas fa-folder-open"></i> Archivio Materiali</button>
+        `;
+    } else {
+        sb.innerHTML = `
+            <button data-tab="archivio-admin" onclick="switchTab('archivio-admin')"><i class="fas fa-folder-open"></i> Archivio Materiali</button>
+            <button data-tab="panoramica" onclick="switchTab('panoramica')"><i class="fas fa-chart-pie"></i> Panoramica Rete</button>
+        `;
+    }
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.sidebar button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    render();
+}
+
+function render() {
+    const c = document.getElementById('content');
+    if (currentTab === 'pipeline') c.innerHTML = renderPipeline();
+    else if (currentTab === 'elenco') c.innerHTML = renderElenco();
+    else if (currentTab === 'archivio-venditore') c.innerHTML = renderArchivio(false);
+    else if (currentTab === 'archivio-admin') c.innerHTML = renderArchivio(true);
+    else if (currentTab === 'panoramica') c.innerHTML = renderPanoramica();
+    attachDragEvents();
+}
+
+// ============================================================
+// PIPELINE (KANBAN)
+// ============================================================
+function renderPipeline() {
+    const all = getProspects(currentUser.nome);
+    const filtered = pipelineSearch ? all.filter(p => matchesSearch(p, pipelineSearch)) : all;
+
+    const cols = STAGES.map(st => {
+        const items = filtered.filter(p => p.stato === st.id);
+        const cards = items.map(p => `
+            <div class="kcard" draggable="true" data-id="${p.id}" style="border-left-color:${st.color}" onclick="openProspectModal('${p.id}')">
+                <div class="nome">${escapeHtml(p.nome)}</div>
+                <div class="azienda">${escapeHtml(p.azienda)}</div>
+                <div class="meta">
+                    <span class="valore">${fmtMoney(p.valore)}</span>
+                    <span class="${isOverdue(p.prossimoContatto) ? 'overdue' : ''}">${p.prossimoContatto ? fmtDate(p.prossimoContatto) : ''}</span>
+                </div>
+            </div>
+        `).join('');
+        return `
+            <div class="kcol">
+                <div class="kcol-head" style="border-color:${st.color}; color:${st.color}">
+                    <span>${st.label}</span><span>${items.length}</span>
+                </div>
+                <div class="kcol-body" data-stage="${st.id}">${cards || '<p style="color:#9CA3AF;font-size:0.8rem;text-align:center;margin-top:20px;">Vuoto</p>'}</div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="content-header">
+            <h2>Pipeline Vendite</h2>
+            <div class="toolbar">
+                <input placeholder="Cerca prospect..." value="${escapeHtml(pipelineSearch)}" oninput="pipelineSearch=this.value; render()">
+                <button type="button" class="btn btn-accent" onclick="openProspectModal(null)"><i class="fas fa-plus"></i> Nuovo Prospect</button>
+            </div>
+        </div>
+        <div class="kanban">${cols}</div>
+    `;
+}
+
+function matchesSearch(p, q) {
+    q = q.toLowerCase();
+    return (p.nome || '').toLowerCase().includes(q) || (p.azienda || '').toLowerCase().includes(q);
+}
+
+function attachDragEvents() {
+    document.querySelectorAll('.kcard').forEach(card => {
+        card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', card.dataset.id); });
+    });
+    document.querySelectorAll('.kcol-body').forEach(col => {
+        col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('dragover'); });
+        col.addEventListener('dragleave', () => col.classList.remove('dragover'));
+        col.addEventListener('drop', e => {
+            e.preventDefault();
+            col.classList.remove('dragover');
+            const id = e.dataTransfer.getData('text/plain');
+            const stage = col.dataset.stage;
+            const arr = getProspects(currentUser.nome);
+            const p = arr.find(x => x.id === id);
+            if (p) { p.stato = stage; saveProspects(currentUser.nome, arr); render(); }
+        });
+    });
+}
+
+// ============================================================
+// ELENCO (TABLE)
+// ============================================================
+function renderElenco() {
+    let all = getProspects(currentUser.nome);
+    if (elencoFilterStato) all = all.filter(p => p.stato === elencoFilterStato);
+    if (elencoSearch) all = all.filter(p => matchesSearch(p, elencoSearch));
+    all.sort((a, b) => (a.prossimoContatto || '9999').localeCompare(b.prossimoContatto || '9999'));
+
+    const stateOptions = STAGES.map(s => `<option value="${s.id}" ${elencoFilterStato === s.id ? 'selected' : ''}>${s.label}</option>`).join('');
+
+    const rows = all.map(p => {
+        const st = stageInfo(p.stato);
+        return `
+            <tr onclick="openProspectModal('${p.id}')">
+                <td><strong>${escapeHtml(p.nome)}</strong></td>
+                <td>${escapeHtml(p.azienda)}</td>
+                <td><span class="badge" style="background:${st.color}">${st.label}</span></td>
+                <td>${fmtMoney(p.valore)}</td>
+                <td class="${isOverdue(p.prossimoContatto) ? 'overdue' : ''}">${fmtDate(p.prossimoContatto)}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const totalValue = all.reduce((s, p) => s + (Number(p.valore) || 0), 0);
+
+    return `
+        <div class="content-header">
+            <h2>Elenco Prospect</h2>
+            <div class="toolbar">
+                <input placeholder="Cerca..." value="${escapeHtml(elencoSearch)}" oninput="elencoSearch=this.value; render()">
+                <select onchange="elencoFilterStato=this.value; render()">
+                    <option value="">Tutti gli stati</option>
+                    ${stateOptions}
+                </select>
+                <button type="button" class="btn btn-accent" onclick="openProspectModal(null)"><i class="fas fa-plus"></i> Nuovo</button>
+            </div>
+        </div>
+        <div class="stat-grid">
+            <div class="stat-card"><div class="n">${all.length}</div><div class="l">Prospect visualizzati</div></div>
+            <div class="stat-card"><div class="n">${fmtMoney(totalValue)}</div><div class="l">Valore pipeline</div></div>
+        </div>
+        ${all.length ? `
+        <table>
+            <thead><tr><th>Nome</th><th>Azienda</th><th>Stato</th><th>Valore</th><th>Prossimo contatto</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>` : `<div class="empty-state"><i class="fas fa-inbox"></i><p>Nessun prospect trovato.</p></div>`}
+    `;
+}
+
+// ============================================================
+// PROSPECT MODAL (CREATE / EDIT)
+// ============================================================
+let editingProspectId = null;
+
+function openProspectModal(id) {
+    editingProspectId = id;
+    const overlay = document.getElementById('modal-prospect-overlay');
+    document.getElementById('p-stage-picker').innerHTML = STAGES.map(s =>
+        `<span class="stage-chip" data-stage="${s.id}" style="background:${s.color}" onclick="pickStage('${s.id}')">${s.label}</span>`
+    ).join('');
+
+    if (id) {
+        const p = getProspects(currentUser.nome).find(x => x.id === id);
+        document.getElementById('prospect-modal-title').innerText = 'Modifica Prospect';
+        document.getElementById('p-id').value = p.id;
+        document.getElementById('p-nome').value = p.nome;
+        document.getElementById('p-azienda').value = p.azienda;
+        document.getElementById('p-telefono').value = p.telefono || '';
+        document.getElementById('p-email').value = p.email || '';
+        document.getElementById('p-valore').value = p.valore || '';
+        document.getElementById('p-data').value = p.prossimoContatto || '';
+        document.getElementById('p-delete-btn').classList.remove('hidden');
+        document.getElementById('p-notes-wrap').classList.remove('hidden');
+        renderTimeline(p.note || []);
+        pickStage(p.stato, false);
+    } else {
+        document.getElementById('prospect-modal-title').innerText = 'Nuovo Prospect';
+        ['p-id','p-nome','p-azienda','p-telefono','p-email','p-valore','p-data'].forEach(f => document.getElementById(f).value = '');
+        document.getElementById('p-delete-btn').classList.add('hidden');
+        document.getElementById('p-notes-wrap').classList.add('hidden');
+        pickStage('nuovo', false);
+    }
+    overlay.classList.add('active');
+}
+
+function pickStage(stageId) {
+    document.querySelectorAll('#p-stage-picker .stage-chip').forEach(c => c.classList.toggle('selected', c.dataset.stage === stageId));
+    document.getElementById('p-stage-picker').dataset.selected = stageId;
+}
+
+function renderTimeline(notes) {
+    const box = document.getElementById('p-timeline');
+    if (!notes.length) { box.innerHTML = '<p style="color:#9CA3AF;font-size:0.8rem;">Nessuna nota ancora.</p>'; return; }
+    box.innerHTML = notes.slice().reverse().map(n => `
+        <div class="timeline-item"><span class="ts">${new Date(n.ts).toLocaleString('it-IT')}</span>${escapeHtml(n.testo)}</div>
+    `).join('');
+}
+
+function addNoteToProspect() {
+    const input = document.getElementById('p-note-input');
+    const text = input.value.trim();
+    if (!text) return;
+    if (!editingProspectId) { alert('Salva prima il prospect, poi potrai aggiungere note.'); return; }
+    const arr = getProspects(currentUser.nome);
+    const p = arr.find(x => x.id === editingProspectId);
+    p.note = p.note || [];
+    p.note.push({ ts: Date.now(), testo: text });
+    saveProspects(currentUser.nome, arr);
+    input.value = '';
+    renderTimeline(p.note);
+}
+
+function saveProspectForm() {
+    const nome = document.getElementById('p-nome').value.trim();
+    const azienda = document.getElementById('p-azienda').value.trim();
+    if (!nome || !azienda) { alert('Nome contatto e Azienda sono obbligatori.'); return; }
+
+    const stato = document.getElementById('p-stage-picker').dataset.selected || 'nuovo';
+    const arr = getProspects(currentUser.nome);
+
+    if (editingProspectId) {
+        const p = arr.find(x => x.id === editingProspectId);
+        Object.assign(p, {
+            nome, azienda,
+            telefono: document.getElementById('p-telefono').value.trim(),
+            email: document.getElementById('p-email').value.trim(),
+            valore: document.getElementById('p-valore').value,
+            prossimoContatto: document.getElementById('p-data').value,
+            stato
+        });
+    } else {
+        arr.push({
+            id: uid(), nome, azienda,
+            telefono: document.getElementById('p-telefono').value.trim(),
+            email: document.getElementById('p-email').value.trim(),
+            valore: document.getElementById('p-valore').value,
+            prossimoContatto: document.getElementById('p-data').value,
+            stato, note: [], creato: Date.now()
+        });
+    }
+    saveProspects(currentUser.nome, arr);
+    closeModal('modal-prospect-overlay');
+    render();
+}
+
+function deleteProspect() {
+    if (!editingProspectId) return;
+    if (!confirm('Eliminare definitivamente questo prospect?')) return;
+    let arr = getProspects(currentUser.nome).filter(x => x.id !== editingProspectId);
+    saveProspects(currentUser.nome, arr);
+    closeModal('modal-prospect-overlay');
+    render();
+}
+
+// ============================================================
+// ARCHIVIO MATERIALI
+// ============================================================
+function renderArchivio(isAdmin) {
+    let mats = getMateriali();
+    if (archivioFilterCat) mats = mats.filter(m => m.categoria === archivioFilterCat);
+    if (archivioSearch) mats = mats.filter(m => (m.titolo || '').toLowerCase().includes(archivioSearch.toLowerCase()));
+    mats.sort((a, b) => b.dataCaricamento - a.dataCaricamento);
+
+    const cats = Object.keys(CATEGORIE_ICON);
+    const catOptions = cats.map(c => `<option value="${c}" ${archivioFilterCat === c ? 'selected' : ''}>${c}</option>`).join('');
+
+    const cards = mats.map(m => `
+        <div class="doc-card">
+            <span class="cat">${m.categoria}</span>
+            <div class="icon"><i class="fas ${CATEGORIE_ICON[m.categoria] || 'fa-file'}"></i></div>
+            <h3>${escapeHtml(m.titolo)}</h3>
+            <p>${escapeHtml(m.descrizione || '')}</p>
+            <div class="foot">
+                <span>${fmtDate(m.dataCaricamento)}</span>
+                <div style="display:flex;gap:6px;">
+                    <button type="button" class="btn btn-sm" onclick="openMateriale('${m.id}')"><i class="fas fa-download"></i> Apri</button>
+                    ${isAdmin ? `<button type="button" class="btn btn-sm btn-danger" onclick="deleteMateriale('${m.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    return `
+        <div class="content-header">
+            <h2>Archivio Materiali di Vendita</h2>
+            <div class="toolbar">
+                <input placeholder="Cerca per titolo..." value="${escapeHtml(archivioSearch)}" oninput="archivioSearch=this.value; render()">
+                <select onchange="archivioFilterCat=this.value; render()">
+                    <option value="">Tutte le categorie</option>
+                    ${catOptions}
+                </select>
+                ${isAdmin ? `<button type="button" class="btn btn-accent" onclick="openMaterialeModal()"><i class="fas fa-cloud-upload-alt"></i> Carica Materiale</button>` : ''}
+            </div>
+        </div>
+        ${mats.length ? `<div class="archive-grid">${cards}</div>` : `<div class="empty-state"><i class="fas fa-folder-open"></i><p>Nessun materiale disponibile${isAdmin ? '. Carica il primo documento per la rete vendita.' : ' al momento. Torna più tardi.'}</p></div>`}
+    `;
+}
+
+function openMaterialeModal() {
+    ['m-titolo','m-descrizione','m-link'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('m-file').value = '';
+    document.getElementById('m-categoria').selectedIndex = 0;
+    document.getElementById('modal-materiale-overlay').classList.add('active');
+}
+
+async function saveMateriale() {
+    const titolo = document.getElementById('m-titolo').value.trim();
+    if (!titolo) { alert('Il titolo è obbligatorio.'); return; }
+    const categoria = document.getElementById('m-categoria').value;
+    const descrizione = document.getElementById('m-descrizione').value.trim();
+    const link = document.getElementById('m-link').value.trim();
+    const fileInput = document.getElementById('m-file');
+    const file = fileInput.files[0];
+
+    let fileData = null, fileName = null;
+    if (file) {
+        if (file.size > 4 * 1024 * 1024) {
+            if (!confirm('Il file è piuttosto grande (> 4MB) e potrebbe non essere salvato correttamente nello spazio locale del browser. Continuare comunque?')) return;
+        }
+        fileData = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+        fileName = file.name;
+    }
+
+    if (!fileData && !link) { alert('Carica un file oppure inserisci un link esterno.'); return; }
+
+    const mats = getMateriali();
+    mats.push({ id: uid(), titolo, categoria, descrizione, fileName, fileData, link, dataCaricamento: Date.now(), caricatoDa: currentUser.nome });
+    try { saveMateriali(mats); } catch (e) { return; }
+
+    closeModal('modal-materiale-overlay');
+    render();
+}
+
+function openMateriale(id) {
+    const m = getMateriali().find(x => x.id === id);
+    if (!m) return;
+    if (m.fileData) {
+        const a = document.createElement('a');
+        a.href = m.fileData;
+        a.download = m.fileName || m.titolo;
+        document.body.appendChild(a); a.click(); a.remove();
+    } else if (m.link) {
+        window.open(m.link, '_blank', 'noopener');
+    }
+}
+
+function deleteMateriale(id) {
+    if (!confirm('Eliminare questo materiale dall\'archivio condiviso?')) return;
+    const mats = getMateriali().filter(x => x.id !== id);
+    saveMateriali(mats);
+    render();
+}
+
+// ============================================================
+// PANORAMICA (ADMIN)
+// ============================================================
+function renderPanoramica() {
+    const venditori = getVenditori();
+    let totalProspect = 0, totalValue = 0, wonValue = 0;
+    const perStato = {}; STAGES.forEach(s => perStato[s.id] = 0);
+    const perVenditore = [];
+
+    venditori.forEach(v => {
+        const arr = getProspects(v);
+        totalProspect += arr.length;
+        let vVal = 0;
+        arr.forEach(p => {
+            totalValue += Number(p.valore) || 0;
+            vVal += Number(p.valore) || 0;
+            perStato[p.stato] = (perStato[p.stato] || 0) + 1;
+            if (p.stato === 'vinto') wonValue += Number(p.valore) || 0;
+        });
+        perVenditore.push({ nome: v, count: arr.length, valore: vVal });
+    });
+    perVenditore.sort((a, b) => b.valore - a.valore);
+
+    const statoRows = STAGES.map(s => `
+        <tr><td><span class="badge" style="background:${s.color}">${s.label}</span></td><td>${perStato[s.id] || 0}</td></tr>
+    `).join('');
+
+    const venditoreRows = perVenditore.map(v => `
+        <tr><td><strong>${escapeHtml(v.nome)}</strong></td><td>${v.count}</td><td>${fmtMoney(v.valore)}</td></tr>
+    `).join('');
+
+    return `
+        <div class="content-header"><h2>Panoramica Rete Vendita</h2></div>
+        <div class="stat-grid">
+            <div class="stat-card"><div class="n">${venditori.length}</div><div class="l">Venditori attivi</div></div>
+            <div class="stat-card"><div class="n">${totalProspect}</div><div class="l">Prospect totali</div></div>
+            <div class="stat-card"><div class="n">${fmtMoney(totalValue)}</div><div class="l">Valore pipeline totale</div></div>
+            <div class="stat-card"><div class="n">${fmtMoney(wonValue)}</div><div class="l">Chiuso vinto</div></div>
+        </div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:260px;">
+                <h3 style="margin-bottom:10px; font-size:1rem; color:var(--primary);">Distribuzione per stato</h3>
+                <table><thead><tr><th>Stato</th><th>N. prospect</th></tr></thead><tbody>${statoRows}</tbody></table>
+            </div>
+            <div style="flex:1; min-width:260px;">
+                <h3 style="margin-bottom:10px; font-size:1rem; color:var(--primary);">Per venditore</h3>
+                ${venditoreRows ? `<table><thead><tr><th>Venditore</th><th>Prospect</th><th>Valore</th></tr></thead><tbody>${venditoreRows}</tbody></table>` : `<div class="empty-state"><i class="fas fa-users"></i><p>Nessun venditore ha ancora inserito prospect.</p></div>`}
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// MODAL / UTILS
+// ============================================================
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+});
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+populateVenditoriDatalist();
+</script>
+</body>
+</html>
